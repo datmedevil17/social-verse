@@ -139,7 +139,7 @@ export const Experience = () => {
     if (buildMode) {
       setItems(map?.items || []);
       state.camera.position.set(8, 8, 8);
-      controls.current.target.set(0, 0, 0);
+      controls.current.target.set(15, 0, 10);
     } else {
       socket.emit("itemsUpdate", items);
     }
@@ -150,8 +150,8 @@ export const Experience = () => {
       state.camera.position.set(0, 4, 8);
       controls.current.target.set(0, 0, 0);
     } else {
-      state.camera.position.set(8, 8, 8);
-      controls.current.target.set(0, 0, 0);
+      state.camera.position.set(25, 25, 25);
+      controls.current.target.set(15, 0, 10);
     }
   }, [shopMode]);
 
