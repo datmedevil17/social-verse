@@ -1,55 +1,61 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Twitter {
-    uint256 private tweetCount = 0; 
-    struct Content {
+contract Spotify {
+    uint256 private trackCount = 0; 
+    struct Track {
         uint256 id;
         address owner;
-        string audio; 
-        string artist;
-        
-        uint256 tipsReceived;
-    }
-    mapping(uint256 => Content) public tweets;
-
-    event TweetCreated(uint256 id, string message, uint256 tipsReceived, address owner);
-    event TweetTipped(address indexed sender, uint256 tweetId, uint256 amount);
-
-    function uploadTweet(string memory _message) external {
-        require(bytes(_message).length > 0, "Cannot pass empty message");
-
-        tweetCount++;
-        tweets[tweetCount] = Content(tweetCount, msg.sender, _message, 0);
-
-        emit TweetCreated(tweetCount, _message, 0, msg.sender);
+        string audio; // URI of the audio file
+        string artist; // Artist name
+        uint256 tipsReceived; // Amount of tips received
     }
 
-    function viewTweet(uint256 tweetId) external view returns (Content memory) {
-        require(tweetId > 0 && tweetId <= tweetCount, "Tweet does not exist.");
-        return tweets[tweetId];
+    mapping(uint256 => Track) public tracks;
+
+    event TrackUploaded(uint256 id, string audio, string artist, uint256 tipsReceived, address owner);
+    event TrackTipped(address indexed sender, uint256 trackId, uint256 amount);
+
+    // Upload new track
+    function uploadTrack(string memory _audio, string memory _artist) external {
+        require(bytes(_audio).length > 0, "Audio file is required.");
+        require(bytes(_artist).length > 0, "Artist name is required.");
+
+        trackCount++;
+        tracks[trackCount] = Track(trackCount, msg.sender, _audio, _artist, 0);
+
+        emit TrackUploaded(trackCount, _audio, _artist, 0, msg.sender);
     }
 
-    // View all tweets
-    function viewAllTweets() external view returns (Content[] memory) {
-        Content[] memory allTweets = new Content[](tweetCount);
-        for (uint256 i = 1; i <= tweetCount; i++) {
-            allTweets[i - 1] = tweets[i];
+    // View a specific track by its ID
+    function viewTrack(uint256 trackId) external view returns (Track memory) {
+        require(trackId > 0 && trackId <= trackCount, "Track does not exist.");
+        return tracks[trackId];
+    }
+
+    // View all tracks uploaded on the platform
+    function viewAllTracks() external view returns (Track[] memory) {
+        Track[] memory allTracks = new Track[](trackCount);
+        for (uint256 i = 1; i <= trackCount; i++) {
+            allTracks[i - 1] = tracks[i];
         }
-        return allTweets;
+        return allTracks;
     }
 
-    function tipTweet(uint256 tweetId) external payable {
-        require(tweetId > 0 && tweetId <= tweetCount, "Tweet does not exist.");
+    // Tip the creator of a track
+    function tipTrack(uint256 trackId) external payable {
+        require(trackId > 0 && trackId <= trackCount, "Track does not exist.");
         require(msg.value > 0, "Tip amount must be greater than zero.");
 
-        tweets[tweetId].tipsReceived += msg.value;
-        payable(tweets[tweetId].owner).transfer(msg.value);
+        tracks[trackId].tipsReceived += msg.value;
+        payable(tracks[trackId].owner).transfer(msg.value);
 
-        emit TweetTipped(msg.sender, tweetId, msg.value);
+        emit TrackTipped(msg.sender, trackId, msg.value);
     }
-    function getTweetCount() external view returns (uint256) {
-        return tweetCount;
+
+    // Get the total number of tracks
+    function getTrackCount() external view returns (uint256) {
+        return trackCount;
     }
 
     // Fallback function to receive Ether

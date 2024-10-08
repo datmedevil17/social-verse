@@ -1,54 +1,58 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Twitter {
-    uint256 private tweetCount = 0; 
-    struct Content {
+contract Instagram {
+    uint256 private postCount = 0;
+
+    struct Post {
         uint256 id;
         address owner;
-        string image; 
+        string imageHash; // IPFS hash or URL to the image
         string caption;
         uint256 tipsReceived;
     }
-    mapping(uint256 => Content) public tweets;
 
-    event TweetCreated(uint256 id, string message, uint256 tipsReceived, address owner);
-    event TweetTipped(address indexed sender, uint256 tweetId, uint256 amount);
+    mapping(uint256 => Post) public posts;
 
-    function uploadTweet(string memory _message) external {
-        require(bytes(_message).length > 0, "Cannot pass empty message");
+    event PostCreated(uint256 id, string imageHash, string caption, uint256 tipsReceived, address owner);
+    event PostTipped(address indexed sender, uint256 postId, uint256 amount);
 
-        tweetCount++;
-        tweets[tweetCount] = Content(tweetCount, msg.sender, _message, 0);
+    function uploadPost(string memory _imageHash, string memory _caption) external {
+        require(bytes(_imageHash).length > 0, "Image is required");
+        require(bytes(_caption).length > 0, "Caption cannot be empty");
 
-        emit TweetCreated(tweetCount, _message, 0, msg.sender);
+        postCount++;
+        posts[postCount] = Post(postCount, msg.sender, _imageHash, _caption, 0);
+
+        emit PostCreated(postCount, _imageHash, _caption, 0, msg.sender);
     }
 
-    function viewTweet(uint256 tweetId) external view returns (Content memory) {
-        require(tweetId > 0 && tweetId <= tweetCount, "Tweet does not exist.");
-        return tweets[tweetId];
+    function viewPost(uint256 postId) external view returns (Post memory) {
+        require(postId > 0 && postId <= postCount, "Post does not exist.");
+        return posts[postId];
     }
 
-    // View all tweets
-    function viewAllTweets() external view returns (Content[] memory) {
-        Content[] memory allTweets = new Content[](tweetCount);
-        for (uint256 i = 1; i <= tweetCount; i++) {
-            allTweets[i - 1] = tweets[i];
+    // View all posts
+    function viewAllPosts() external view returns (Post[] memory) {
+        Post[] memory allPosts = new Post[](postCount);
+        for (uint256 i = 1; i <= postCount; i++) {
+            allPosts[i - 1] = posts[i];
         }
-        return allTweets;
+        return allPosts;
     }
 
-    function tipTweet(uint256 tweetId) external payable {
-        require(tweetId > 0 && tweetId <= tweetCount, "Tweet does not exist.");
+    function tipPost(uint256 postId) external payable {
+        require(postId > 0 && postId <= postCount, "Post does not exist.");
         require(msg.value > 0, "Tip amount must be greater than zero.");
 
-        tweets[tweetId].tipsReceived += msg.value;
-        payable(tweets[tweetId].owner).transfer(msg.value);
+        posts[postId].tipsReceived += msg.value;
+        payable(posts[postId].owner).transfer(msg.value);
 
-        emit TweetTipped(msg.sender, tweetId, msg.value);
+        emit PostTipped(msg.sender, postId, msg.value);
     }
-    function getTweetCount() external view returns (uint256) {
-        return tweetCount;
+
+    function getPostCount() external view returns (uint256) {
+        return postCount;
     }
 
     // Fallback function to receive Ether
